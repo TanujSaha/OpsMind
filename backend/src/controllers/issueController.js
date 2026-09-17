@@ -5,6 +5,26 @@ const axios = require('axios');
 const createIssue = async (req, res) => {
   try {
     const { building, room, asset, description } = req.body;
+
+    // FEATURE 1: SMART TICKET CLUSTERING (SPAM PREVENTION)
+    // Check if an unresolved issue already exists for this exact location and asset
+    const existingIssue = await Issue.findOne({
+      building,
+      room,
+      asset: asset || 'General Facility',
+      status: { $ne: 'Resolved' }
+    });
+
+    if (existingIssue) {
+      console.log('Duplicate detected, clustering with existing ticket:', existingIssue._id);
+      return res.status(200).json({ 
+        success: true, 
+        clustered: true,
+        message: 'Issue clustered with existing active ticket.',
+        data: existingIssue 
+      });
+    }
+
     let aiData = { department: 'General Facilities', category: 'General Maintenance', priority: 'Medium', eta: '24 Hours', status: 'Submitted' };
 
     try {
@@ -18,7 +38,7 @@ const createIssue = async (req, res) => {
 
     const newIssue = new Issue({ building, room, asset: asset || 'General Facility', description, ...aiData });
     const savedIssue = await newIssue.save();
-    res.status(201).json({ success: true, data: savedIssue });
+    res.status(201).json({ success: true, clustered: false, data: savedIssue });
   } catch (error) {
     console.error('Critical server error creating issue:', error);
     res.status(500).json({ success: false, error: error.message || 'Server error' });
@@ -30,12 +50,10 @@ const getIssues = async (req, res) => {
     const issues = await Issue.find().sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: issues });
   } catch (error) {
-    console.error('Error fetching issues:', error);
     res.status(500).json({ success: false, error: 'Server error' });
   }
 };
 
-// NEW: Function to update the status to Resolved
 const updateIssueStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -45,7 +63,6 @@ const updateIssueStatus = async (req, res) => {
     if (!updatedIssue) return res.status(404).json({ success: false, error: 'Issue not found' });
     res.status(200).json({ success: true, data: updatedIssue });
   } catch (error) {
-    console.error('Error updating issue:', error);
     res.status(500).json({ success: false, error: 'Server error' });
   }
 };
