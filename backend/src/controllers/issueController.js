@@ -8,7 +8,7 @@ exports.createIssue = async (req, res) => {
     let aiCategory = 'General Maintenance';
     let aiPriority = 'Medium';
 
-    // Try talking to the Python AI service
+    // Try talking to the Python AI service safely
     try {
       const aiResponse = await axios.post(process.env.PYTHON_AI_URL || 'http://localhost:8000/analyze', {
         description
@@ -18,10 +18,10 @@ exports.createIssue = async (req, res) => {
         aiPriority = aiResponse.data.priority || aiPriority;
       }
     } catch (aiError) {
-      console.warn('⚠️ AI Fetch Error (Python service offline, using defaults):', aiError.message);
+      console.warn('⚠️ AI Service offline, using default classification:', aiError.message);
     }
 
-    // Save to MongoDB regardless of whether Python AI is awake
+    // Save to MongoDB
     const newIssue = new Issue({
       building,
       room,
