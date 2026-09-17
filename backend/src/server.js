@@ -3,15 +3,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-// 🚨 CHECK THIS LINE! 🚨
-// Look at your VS Code folders. Where is your routes file?
-// If it is inside a 'routes' folder OUTSIDE of 'src', change this to: require('../routes/issues')
-// If the file is named something else, change 'issues' to the correct name.
-const issueRoutes = require('./routes/issues'); 
+// --- THE FIX: Added '..' to go up one folder level ---
+const issueRoutes = require('../routes/issues'); 
 
 const app = express();
 
-// --- CORS is fully open for Vercel ---
+// --- Open CORS for Vercel ---
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
