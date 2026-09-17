@@ -1,12 +1,19 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ReportIssue = () => {
   const [formData, setFormData] = useState({ building: '', room: '', asset: '', description: '' });
   const [loading, setLoading] = useState(false);
   const [aiResult, setAiResult] = useState(null);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleClear = () => {
+    setFormData({ building: '', room: '', asset: '', description: '' });
+    setAiResult(null);
   };
 
   const handleSubmit = async (e) => {
@@ -62,19 +69,29 @@ const ReportIssue = () => {
           <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Describe problem (e.g., AC not working)" required rows="4" style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
         </div>
 
-        <button type="submit" disabled={loading} style={{ padding: '1rem', borderRadius: '8px', backgroundColor: loading ? '#64748b' : '#2563eb', color: 'white', border: 'none', fontWeight: '600', cursor: 'pointer' }}>
-          {loading ? 'Analyzing via AI Engine...' : 'Submit & Categorize via AI'}
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+          <button type="submit" disabled={loading} style={{ flex: 2, padding: '1rem', borderRadius: '8px', backgroundColor: loading ? '#64748b' : '#2563eb', color: 'white', border: 'none', fontWeight: '600', cursor: 'pointer' }}>
+            {loading ? 'Analyzing via AI Engine...' : 'Submit & Categorize via AI'}
+          </button>
+          
+          <button type="button" onClick={handleClear} style={{ flex: 1, padding: '1rem', borderRadius: '8px', backgroundColor: '#e2e8f0', color: '#334155', border: 'none', fontWeight: '600', cursor: 'pointer' }}>
+            Clear Form
+          </button>
+        </div>
       </form>
 
       {aiResult && (
         <div style={{ marginTop: '2rem', background: '#ecfdf5', border: '1px solid #10b981', padding: '1.5rem', borderRadius: '12px' }}>
-          <h3 style={{ color: '#047857', margin: '0 0 0.75rem 0' }}>✨ AI Categorization Complete</h3>
+          <h3 style={{ color: '#047857', margin: '0 0 0.75rem 0' }}>✨ AI Categorization Complete & Saved to Database!</h3>
           <p style={{ margin: '0.25rem 0' }}><strong>Department:</strong> {aiResult.department || 'General Facilities'}</p>
           <p style={{ margin: '0.25rem 0' }}><strong>Category:</strong> {aiResult.category || 'General Maintenance'}</p>
           <p style={{ margin: '0.25rem 0' }}><strong>Priority Assigned:</strong> <span style={{ color: (aiResult.priority || 'Medium') === 'High' ? '#dc2626' : '#d97706', fontWeight: 'bold' }}>{aiResult.priority || 'Medium'}</span></p>
           <p style={{ margin: '0.25rem 0' }}><strong>Estimated Resolution (ETA):</strong> {aiResult.eta || '24 Hours'}</p>
           <p style={{ margin: '0.25rem 0' }}><strong>Status:</strong> {aiResult.status || 'Submitted'}</p>
+
+          <button onClick={() => navigate('/issue-tracker')} style={{ marginTop: '1rem', padding: '0.75rem 1.25rem', backgroundColor: '#059669', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
+            View Live Incident Tracker ➔
+          </button>
         </div>
       )}
     </div>
