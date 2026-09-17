@@ -35,7 +35,7 @@ const ReportIssue = () => {
       if (!response.ok) throw new Error(data.error || 'Server error');
 
       setAiResult(data.data);
-      setFormData({ building: '', room: '', asset: '', description: '' });
+      // NOTE: Form data is intentionally NOT cleared here so your typed text stays!
     } catch (error) {
       console.error('Submission error:', error);
       alert('Error submitting issue to backend: ' + error.message);
@@ -87,7 +87,7 @@ const ReportIssue = () => {
           <p style={{ margin: '0.25rem 0' }}><strong>Category:</strong> {aiResult.category || 'General Maintenance'}</p>
           <p style={{ margin: '0.25rem 0' }}><strong>Priority Assigned:</strong> <span style={{ color: (aiResult.priority || 'Medium') === 'High' ? '#dc2626' : '#d97706', fontWeight: 'bold' }}>{aiResult.priority || 'Medium'}</span></p>
           <p style={{ margin: '0.25rem 0' }}><strong>Estimated Resolution (ETA):</strong> {aiResult.eta || '24 Hours'}</p>
-          <p style={{ margin: '0.25rem 0' }}><strong>Status:</strong> {aiResult.status || 'Submitted'}</p>
+          <p style={{ margin: '0.25rem 0' }}><strong>Status:</strong> {aiResult.status || 'Assigned'}</p>
 
           <button onClick={() => navigate('/issue-tracker')} style={{ marginTop: '1rem', padding: '0.75rem 1.25rem', backgroundColor: '#059669', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
             View Live Incident Tracker ➔
