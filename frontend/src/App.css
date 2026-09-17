@@ -123,6 +123,7 @@ body {
 /* --- MOBILE RESPONSIVE DESIGN --- */
 @media (max-width: 768px) {
   .navbar {
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
     padding: 1.2rem 1rem;

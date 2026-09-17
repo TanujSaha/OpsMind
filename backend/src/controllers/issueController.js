@@ -1,76 +1,42 @@
 const Issue = require('../models/Issue');
-const aiService = require('../services/aiService');
+const axios = require('axios');
 
-exports.createIssue = async (req, res, next) => {
+exports.createIssue = async (req, res) => {
   try {
-    const { building, room, description } = req.body;
-    
-    // 1. Save issue in MongoDB initially (Pending AI)
-    let issue = new Issue({
+    const { building, room, asset, description } = req.body;
+
+    let aiCategory = 'General Maintenance';
+    let aiPriority = 'Medium';
+
+    // Try talking to the Python AI service
+    try {
+      const aiResponse = await axios.post(process.env.PYTHON_AI_URL || 'http://localhost:8000/analyze', {
+        description
+      });
+      if (aiResponse.data) {
+        aiCategory = aiResponse.data.category || aiCategory;
+        aiPriority = aiResponse.data.priority || aiPriority;
+      }
+    } catch (aiError) {
+      console.warn('⚠️ AI Fetch Error (Python service offline, using defaults):', aiError.message);
+    }
+
+    // Save to MongoDB regardless of whether Python AI is awake
+    const newIssue = new Issue({
       building,
       room,
+      asset,
       description,
-      aiAnalysis: { 
-        category: 'Pending', 
-        priority: 'LOW', 
-        severity: 0, 
-        recommendedAction: 'Analyzing...' 
-      }
+      category: aiCategory,
+      priority: aiPriority,
+      status: 'Open'
     });
-    await issue.save();
 
-    // 2 & 3. Node sends issue description to Python & Python returns AI result
-    const aiResult = await aiService.analyzeIssueText(description);
-    
-    // 4. Node updates MongoDB
-    // 4. Node updates MongoDB
-    if (aiResult) {
-      issue.aiAnalysis = {
-        category: aiResult.category,
-        priority: aiResult.priority,
-        severity: aiResult.severity,
-        // Grabbing the exact key from your ai_engine.py
-        recommendedAction: aiResult.recommendedAction 
-      };
-    } else {
-      // Graceful fallback if AI is offline/timed out
-      issue.aiAnalysis.category = 'Unassigned';
-      issue.aiAnalysis.recommendedAction = 'AI Service unavailable. Manual triage required.';
-    }
-    await issue.save();
+    await newIssue.save();
+    res.status(201).json({ success: true, data: newIssue });
 
-    // 5. React receives complete issue
-    res.status(201).json({ success: true, data: issue });
-  } catch (error) { 
-    next(error); 
+  } catch (error) {
+    console.error('Server error creating issue:', error);
+    res.status(500).json({ success: false, error: 'Server error' });
   }
-};
-
-exports.getIssues = async (req, res, next) => {
-  try {
-    const issues = await Issue.find().sort({ createdAt: -1 });
-    res.json({ success: true, count: issues.length, data: issues });
-  } catch (error) { next(error); }
-};
-
-exports.getIssueById = async (req, res, next) => {
-  try {
-    const issue = await Issue.findById(req.params.id);
-    if (!issue) return res.status(404).json({ success: false, message: 'Not found' });
-    res.json({ success: true, data: issue });
-  } catch (error) { next(error); }
-};
-
-exports.updateIssue = async (req, res, next) => {
-  try {
-    const issue = await Issue.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json({ success: true, data: issue });
-  } catch (error) { next(error); }
-};
-
-exports.deleteIssue = async (req, res, next) => {
-  try {
-    await Issue.findByIdAndDelete(req.params.id);
-    res.json({ success: true, message: 'Issue deleted' });
-  } catch (error) { next(error); }
 };
