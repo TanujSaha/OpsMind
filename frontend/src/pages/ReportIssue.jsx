@@ -1,4 +1,4 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 
 const ReportIssue = () => {
   const [formData, setFormData] = useState({ building: '', room: '', asset: '', description: '' });
@@ -24,7 +24,7 @@ const ReportIssue = () => {
       const data = await response.json();
       if (!response.ok) throw new Error('Error submitting issue');
 
-      setAiResult(data.data); // Capture MongoDB document containing AI category & priority
+      setAiResult(data.data);
       setFormData({ building: '', room: '', asset: '', description: '' });
     } catch (error) {
       console.error(error);
@@ -64,13 +64,12 @@ const ReportIssue = () => {
         </button>
       </form>
 
-      {/* Inline AI Response Card */}
       {aiResult && (
         <div style={{ marginTop: '2rem', background: '#ecfdf5', border: '1px solid #10b981', padding: '1.5rem', borderRadius: '12px' }}>
           <h3 style={{ color: '#047857', margin: '0 0 0.75rem 0' }}>✨ AI Categorization Complete</h3>
-          <p style={{ margin: '0.25rem 0' }}><strong>Category:</strong> {aiResult.category}</p>
-          <p style={{ margin: '0.25rem 0' }}><strong>Priority Assigned:</strong> <span style={{ color: aiResult.priority === 'High' ? '#dc2626' : '#d97706', fontWeight: 'bold' }}>{aiResult.priority}</span></p>
-          <p style={{ margin: '0.25rem 0' }}><strong>Status:</strong> {aiResult.status}</p>
+          <p style={{ margin: '0.25rem 0' }}><strong>Category:</strong> {aiResult.category || 'General Maintenance'}</p>
+          <p style={{ margin: '0.25rem 0' }}><strong>Priority Assigned:</strong> <span style={{ color: (aiResult.priority || 'Medium') === 'High' ? '#dc2626' : '#d97706', fontWeight: 'bold' }}>{aiResult.priority || 'Medium'}</span></p>
+          <p style={{ margin: '0.25rem 0' }}><strong>Status:</strong> {aiResult.status || 'Open'}</p>
         </div>
       )}
     </div>
