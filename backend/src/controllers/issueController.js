@@ -8,7 +8,7 @@ exports.createIssue = async (req, res) => {
     let aiCategory = 'General Maintenance';
     let aiPriority = 'Medium';
 
-    // Try talking to the Python AI service safely
+    // Try talking to Python AI service
     try {
       const aiResponse = await axios.post(process.env.PYTHON_AI_URL || 'http://localhost:8000/analyze', {
         description
