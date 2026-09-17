@@ -1,28 +1,30 @@
+require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const mongoose = require('mongoose');
-require('dotenv').config(); // Points to root backend/.env
+const cors = require('cors');
 
-const issueRoutes = require('./routes/issueRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
-const errorHandler = require('./middleware/errorHandler');
+// Import your routes
+const issueRoutes = require('./routes/issues'); 
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// --- THE FIX: Open CORS to allow Vercel to communicate with Render ---
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// Routes
-app.use('/api/issues', issueRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-
-// Error Middleware
-app.use(errorHandler);
-
+// --- Database Connection ---
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('✅ MongoDB Connected');
-    app.listen(PORT, () => console.log(`🚀 Backend running on port ${PORT}`));
-  })
-  .catch(err => console.error('DB Error:', err));
+  .then(() => console.log('MongoDB Connected successfully!'))
+  .catch((err) => console.error('Database connection failed:', err));
+
+// --- Routes ---
+app.use('/api/issues', issueRoutes);
+
+// --- Health Check ---
+app.get('/', (req, res) => {
+  res.send('OpsMind Backend is live and ready!');
+});
+
+// --- Server Start ---
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
