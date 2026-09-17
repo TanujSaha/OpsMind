@@ -9,7 +9,7 @@ const IssueSchema = new mongoose.Schema({
   category: { type: String, default: 'General Maintenance' },
   priority: { type: String, default: 'Medium' },
   eta: { type: String, default: '24 Hours' },
-  status: { type: String, default: 'Submitted' }, // Submitted, Assigned, In Progress, Resolved
+  status: { type: String, default: 'Submitted' }, // Removed strict enum to allow Assigned, In Progress, Open, etc.
   createdAt: { type: Date, default: Date.now }
 });
 
