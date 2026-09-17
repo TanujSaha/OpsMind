@@ -4,7 +4,7 @@ const Issues = () => {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchIssues = () => {
     fetch('https://opsmind-backend-f4pc.onrender.com/api/issues')
       .then(res => res.json())
       .then(data => {
@@ -17,6 +17,12 @@ const Issues = () => {
         console.error('Error fetching issues:', err);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchIssues();
+    const interval = setInterval(fetchIssues, 3000); // Auto-sync every 3 seconds
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -35,13 +41,13 @@ const Issues = () => {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {issues.map((item, index) => (
-            <div key={index} style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)', borderLeft: `6px solid ${item.priority === 'High' ? '#dc2626' : '#2563eb'}` }}>
+            <div key={index} style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)', borderLeft: `6px solid ${(item.priority || 'Medium') === 'High' ? '#dc2626' : '#2563eb'}` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                 <div>
                   <span style={{ background: '#f1f5f9', color: '#334155', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', marginRight: '0.5rem' }}>
                     🏢 {item.department || 'General Facilities'}
                   </span>
-                  <span style={{ background: item.priority === 'High' ? '#fee2e2' : '#fef3c7', color: item.priority === 'High' ? '#991b1b' : '#92400e', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600' }}>
+                  <span style={{ background: (item.priority || 'Medium') === 'High' ? '#fee2e2' : '#fef3c7', color: (item.priority || 'Medium') === 'High' ? '#991b1b' : '#92400e', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600' }}>
                     ⚡ {item.priority || 'Medium'} Priority
                   </span>
                 </div>
