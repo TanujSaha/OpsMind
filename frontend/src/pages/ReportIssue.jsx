@@ -22,7 +22,7 @@ const ReportIssue = () => {
       // 🚨 REPLACE THIS URL WITH YOUR ACTUAL LIVE RENDER LINK 🚨
       // Example: fetch('https://opsmind-backend-xxxx.onrender.com/api/issues', ...)
       
-      const response = await fetch('https://opsmind-ai-xurx.onrender.com/api/issues', {
+      const response = await fetch('https://opsmind-backend-f4pc.onrender.com/api/issues', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
