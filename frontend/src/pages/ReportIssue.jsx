@@ -17,18 +17,21 @@ const ReportIssue = () => {
     try {
       const response = await fetch('https://opsmind-backend-f4pc.onrender.com/api/issues', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify(formData),
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error('Error submitting issue');
+      if (!response.ok) throw new Error(data.error || 'Server error');
 
       setAiResult(data.data);
       setFormData({ building: '', room: '', asset: '', description: '' });
     } catch (error) {
-      console.error(error);
-      alert('Error submitting issue to backend');
+      console.error('Submission error:', error);
+      alert('Error submitting issue to backend: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -67,9 +70,11 @@ const ReportIssue = () => {
       {aiResult && (
         <div style={{ marginTop: '2rem', background: '#ecfdf5', border: '1px solid #10b981', padding: '1.5rem', borderRadius: '12px' }}>
           <h3 style={{ color: '#047857', margin: '0 0 0.75rem 0' }}>✨ AI Categorization Complete</h3>
+          <p style={{ margin: '0.25rem 0' }}><strong>Department:</strong> {aiResult.department || 'General Facilities'}</p>
           <p style={{ margin: '0.25rem 0' }}><strong>Category:</strong> {aiResult.category || 'General Maintenance'}</p>
           <p style={{ margin: '0.25rem 0' }}><strong>Priority Assigned:</strong> <span style={{ color: (aiResult.priority || 'Medium') === 'High' ? '#dc2626' : '#d97706', fontWeight: 'bold' }}>{aiResult.priority || 'Medium'}</span></p>
-          <p style={{ margin: '0.25rem 0' }}><strong>Status:</strong> {aiResult.status || 'Open'}</p>
+          <p style={{ margin: '0.25rem 0' }}><strong>Estimated Resolution (ETA):</strong> {aiResult.eta || '24 Hours'}</p>
+          <p style={{ margin: '0.25rem 0' }}><strong>Status:</strong> {aiResult.status || 'Submitted'}</p>
         </div>
       )}
     </div>
