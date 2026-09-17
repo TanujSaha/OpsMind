@@ -1,16 +1,16 @@
 const mongoose = require('mongoose');
 
-const issueSchema = new mongoose.Schema({
+const IssueSchema = new mongoose.Schema({
   building: { type: String, required: true },
   room: { type: String, required: true },
+  asset: { type: String, default: 'General Facility' },
   description: { type: String, required: true },
-  status: { type: String, enum: ['Open', 'In Progress', 'Resolved'], default: 'Open' },
-  aiAnalysis: {
-    category: { type: String, default: 'Unassigned' },
-    priority: { type: String, default: 'LOW' },
-    severity: { type: Number, default: 0 },
-    recommendedAction: { type: String, default: 'Pending analysis' }
-  }
-}, { timestamps: true });
+  department: { type: String, default: 'General Facilities' },
+  category: { type: String, default: 'General Maintenance' },
+  priority: { type: String, default: 'Medium' },
+  eta: { type: String, default: '24 Hours' },
+  status: { type: String, default: 'Submitted' }, // Fully flexible string to prevent validation crashes
+  createdAt: { type: Date, default: Date.now }
+});
 
-module.exports = mongoose.model('Issue', issueSchema);
+module.exports = mongoose.model('Issue', IssueSchema);

@@ -35,7 +35,7 @@ const createIssue = async (req, res) => {
       category: aiData.category,
       priority: aiData.priority,
       eta: aiData.eta,
-      status: aiData.status
+      status: aiData.status || 'Submitted'
     });
 
     await newIssue.save();
@@ -43,7 +43,7 @@ const createIssue = async (req, res) => {
 
   } catch (error) {
     console.error('Server error creating issue:', error);
-    res.status(500).json({ success: false, error: 'Server error' });
+    res.status(500).json({ success: false, error: error.message || 'Server error' });
   }
 };
 
