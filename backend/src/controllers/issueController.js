@@ -1,4 +1,5 @@
-const Issue = require('../models/Issue');
+// --- THE ABSOLUTE FIX: Go up two levels to find models outside of src ---
+const Issue = require('../../models/Issue');
 const axios = require('axios');
 
 exports.createIssue = async (req, res) => {
