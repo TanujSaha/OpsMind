@@ -3,12 +3,15 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-// Import your routes
+// 🚨 CHECK THIS LINE! 🚨
+// Look at your VS Code folders. Where is your routes file?
+// If it is inside a 'routes' folder OUTSIDE of 'src', change this to: require('../routes/issues')
+// If the file is named something else, change 'issues' to the correct name.
 const issueRoutes = require('./routes/issues'); 
 
 const app = express();
 
-// --- THE FIX: Open CORS to allow Vercel to communicate with Render ---
+// --- CORS is fully open for Vercel ---
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
