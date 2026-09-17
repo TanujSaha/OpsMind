@@ -1,32 +1,39 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
 require('dotenv').config();
-
-const issueRoutes = require('./routes/issueRoutes');
-
+const express = require('express');
+const nodemailer = require('nodemailer');
 const app = express();
 
-// Middleware
-app.use(cors());
+// Middleware to parse JSON bodies
 app.use(express.json());
 
-// Database Connection
-mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB Connected successfully!'))
-.catch(err => console.error('MongoDB connection error:', err));
-
-// Routes
-app.use('/api/issues', issueRoutes);
-
-app.get('/', (req, res) => {
-  res.send('OpsMind Backend is running!');
+// Configure the email transport using environment variables
+const transporter = nodemailer.createTransport({
+  service: 'gmail', // Can be switched to sendgrid, mailgun, etc.
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_APP_PASSWORD 
+  }
 });
 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// The dedicated email endpoint
+app.post('/api/send-email', async (req, res) => {
+  const { to, subject, message } = req.body;
+
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: subject,
+      text: message,
+      // html: `<p>${message}</p>` // Optional: Use this instead of 'text' for rich formatting
+    });
+    
+    res.status(200).json({ success: true, message: 'Email sent successfully!' });
+  } catch (error) {
+    console.error('Email Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to send email.' });
+  }
 });
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

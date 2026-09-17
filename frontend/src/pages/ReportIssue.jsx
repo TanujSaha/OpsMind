@@ -47,9 +47,8 @@ const ReportIssue = () => {
       
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'white', padding: '2rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
         
-        {/* Email Field Added */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label style={{ fontWeight: '600' }}>Your Email (For Updates)</label>
+          <label style={{ fontWeight: '600' }}>Your Email (To receive resolution updates)</label>
           <input type="email" name="userEmail" value={formData.userEmail} onChange={handleChange} placeholder="e.g., student@university.edu" required style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
         </div>
 
@@ -86,10 +85,8 @@ const ReportIssue = () => {
             {isClustered ? '⚠️ Duplicate Detected: Clustered with Active Ticket' : '✨ AI Categorization Complete & Saved!'}
           </h3>
           <p style={{ margin: '0.25rem 0' }}><strong>Department:</strong> {aiResult.department}</p>
-          <p style={{ margin: '0.25rem 0' }}><strong>Category:</strong> {aiResult.category}</p>
           <p style={{ margin: '0.25rem 0' }}><strong>Priority Assigned:</strong> {aiResult.priority}</p>
-          <p style={{ margin: '0.25rem 0' }}><strong>Status:</strong> {aiResult.status}</p>
-          {!isClustered && <p style={{ margin: '0.25rem 0', color: '#059669', fontSize: '0.9rem' }}>📧 You will be emailed when this is resolved.</p>}
+          {!isClustered && <p style={{ margin: '0.5rem 0', color: '#059669', fontSize: '0.95rem', fontWeight: 'bold' }}>📧 You will be emailed when this is marked resolved.</p>}
 
           <button onClick={() => navigate('/issue-tracker')} style={{ marginTop: '1rem', padding: '0.75rem 1.25rem', backgroundColor: '#0f172a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
             View Live Incident Tracker ➔
