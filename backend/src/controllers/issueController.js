@@ -5,52 +5,20 @@ const axios = require('axios');
 const createIssue = async (req, res) => {
   try {
     const { building, room, asset, description } = req.body;
-
-    // Default fallback values in case AI service is sleeping or offline
-    let aiData = {
-      department: 'General Facilities',
-      category: 'General Maintenance',
-      priority: 'Medium',
-      eta: '24 Hours',
-      status: 'Submitted'
-    };
+    let aiData = { department: 'General Facilities', category: 'General Maintenance', priority: 'Medium', eta: '24 Hours', status: 'Submitted' };
 
     try {
-      const aiResponse = await axios.post(process.env.PYTHON_AI_URL || 'http://localhost:8000/analyze', {
-        description
-      }, { timeout: 3000 });
-
+      const aiResponse = await axios.post(process.env.PYTHON_AI_URL || 'http://localhost:8000/analyze', { description }, { timeout: 3000 });
       if (aiResponse.data) {
-        aiData = {
-          department: aiResponse.data.department || aiData.department,
-          category: aiResponse.data.category || aiData.category,
-          priority: aiResponse.data.priority || aiData.priority,
-          eta: aiResponse.data.eta || aiData.eta,
-          status: aiResponse.data.status || 'Assigned'
-        };
+        aiData = { ...aiData, ...aiResponse.data, status: aiResponse.data.status || 'Assigned' };
       }
     } catch (aiError) {
       console.warn('⚠️ AI Service offline, using default operational routing:', aiError.message);
     }
 
-    // Always create and save the issue to MongoDB
-    const newIssue = new Issue({
-      building,
-      room,
-      asset: asset || 'General Facility',
-      description,
-      department: aiData.department,
-      category: aiData.category,
-      priority: aiData.priority,
-      eta: aiData.eta,
-      status: aiData.status
-    });
-
+    const newIssue = new Issue({ building, room, asset: asset || 'General Facility', description, ...aiData });
     const savedIssue = await newIssue.save();
-    console.log('Successfully saved issue to DB:', savedIssue._id);
-    
     res.status(201).json({ success: true, data: savedIssue });
-
   } catch (error) {
     console.error('Critical server error creating issue:', error);
     res.status(500).json({ success: false, error: error.message || 'Server error' });
@@ -67,4 +35,19 @@ const getIssues = async (req, res) => {
   }
 };
 
-module.exports = { createIssue, getIssues };
+// NEW: Function to update the status to Resolved
+const updateIssueStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const updatedIssue = await Issue.findByIdAndUpdate(id, { status }, { new: true });
+    
+    if (!updatedIssue) return res.status(404).json({ success: false, error: 'Issue not found' });
+    res.status(200).json({ success: true, data: updatedIssue });
+  } catch (error) {
+    console.error('Error updating issue:', error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+};
+
+module.exports = { createIssue, getIssues, updateIssueStatus };
