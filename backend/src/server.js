@@ -3,8 +3,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-// --- THE FIX: Added '..' to go up one folder level ---
-const issueRoutes = require('../routes/issues'); 
+// --- THE FIX: Pointing exactly to the issueRoutes file inside the src/routes folder ---
+const issueRoutes = require('./routes/issueRoutes'); 
 
 const app = express();
 
