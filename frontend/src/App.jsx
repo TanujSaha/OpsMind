@@ -1,32 +1,38 @@
-// frontend/src/App.jsx
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import ReportIssue from './pages/ReportIssue';
 import Issues from './pages/Issues';
+// If you haven't built the Assets page yet, you can leave this import out or create a dummy page!
+ 
+import './App.css';
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <div className="app-container">
-        <aside className="sidebar">
-          <h2>OpsMind</h2>
-          <Link to="/">Dashboard</Link>
-          <Link to="/report">Report Issue</Link>
-          <Link to="/issues">Issue Tracker</Link>
-          <Link to="/assets">Assets Catalog</Link>
-        </aside>
-        
+        {/* --- NAVBAR --- */}
+        <nav className="navbar">
+          <h1>OpsMind</h1>
+          <div className="nav-links">
+            <Link to="/">Dashboard</Link>
+            <Link to="/report-issue">Report Issue</Link>
+            <Link to="/issue-tracker">Issue Tracker</Link>
+            <Link to="/assets-catalog">Assets Catalog</Link>
+          </div>
+        </nav>
+
+        {/* --- PAGE CONTENT --- */}
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/report" element={<ReportIssue />} />
-            <Route path="/issues" element={<Issues />} />
-            {/* Stubbed Routes for completeness */}
-            <Route path="/assets" element={<h1>Assets Catalog (Coming Soon)</h1>} />
+            <Route path="/report-issue" element={<ReportIssue />} />
+            <Route path="/issue-tracker" element={<Issues />} />
+           
           </Routes>
         </main>
       </div>
-    </BrowserRouter>
+    </Router>
   );
 }
 

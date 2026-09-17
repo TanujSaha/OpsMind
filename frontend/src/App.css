@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary-color: #0f172a; /* Deep Slate Blue */
+  --primary-color: #0f172a; 
   --text-main: #1e293b;
   --text-muted: #64748b;
   --bg-color: #f8fafc;
@@ -64,7 +64,7 @@ body {
 }
 
 /* --- Layout & Headings --- */
-.container {
+.main-content {
   padding: 2.5rem 5%;
   max-width: 1200px;
   margin: 0 auto;
@@ -77,7 +77,7 @@ body {
   color: var(--primary-color);
 }
 
-/* --- Dashboard Cards (Modern & Interactive) --- */
+/* --- Dashboard Cards --- */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -88,26 +88,23 @@ body {
   background: var(--card-bg);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   border: 1px solid #e2e8f0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   cursor: pointer;
 }
 
-/* The hover lift animation */
 .card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
   border-color: #cbd5e1;
 }
 
 .card h3 {
   font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
   color: var(--text-muted);
   margin-bottom: 0.5rem;
-  font-weight: 600;
 }
 
 .card p, .card .number {
@@ -117,10 +114,8 @@ body {
   margin: 0;
 }
 
-/* Adding color specifically to the numbers based on what they represent */
-.card:nth-child(3) p { color: var(--accent-red); } /* High Priority */
-.card:nth-child(4) p { color: var(--accent-green); } /* Resolved */
-
+.card:nth-child(3) p { color: var(--accent-red); } 
+.card:nth-child(4) p { color: var(--accent-green); } 
 
 /* --- MOBILE RESPONSIVE DESIGN --- */
 @media (max-width: 768px) {
@@ -128,21 +123,21 @@ body {
     flex-direction: column;
     align-items: flex-start;
     padding: 1.2rem 1rem;
-    gap: 1.2rem;
+    gap: 1rem;
   }
 
   .navbar h1 {
     padding-left: 0.5rem;
   }
 
-  /* Transform links into a swipeable pill row */
+  /* FORCED SWIPEABLE ROW */
   .nav-links {
+    display: flex !important;
+    flex-wrap: nowrap !important; /* Forces them to stay on ONE line */
     width: 100%;
     gap: 0.5rem;
-    overflow-x: auto; 
+    overflow-x: auto !important; /* Turns on swiping */
     padding-bottom: 0.5rem;
-    
-    /* Hide the scrollbar for a clean UI */
     -ms-overflow-style: none; 
     scrollbar-width: none; 
   }
@@ -155,26 +150,19 @@ body {
     background: rgba(255, 255, 255, 0.1);
     padding: 0.6rem 1.2rem;
     border-radius: 30px;
-    white-space: nowrap; /* Forces text to stay on one line */
+    white-space: nowrap !important; /* Double force text to not wrap */
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  /* Tactile click effect on mobile */
   .nav-links a:active {
     transform: scale(0.95);
     background: rgba(255, 255, 255, 0.2);
   }
 
-  .page-title {
-    font-size: 1.75rem;
-    padding: 0 0.5rem;
-  }
-
-  .container {
+  .main-content {
     padding: 1.5rem 1rem;
   }
 
-  /* Keeps the 2x2 grid layout on phones */
   .dashboard-grid {
     grid-template-columns: repeat(2, 1fr); 
     gap: 1rem;
