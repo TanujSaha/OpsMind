@@ -20,7 +20,7 @@ app.use('/api/dashboard', dashboardRoutes);
 // Error Middleware
 app.use(errorHandler);
 
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB Connected');
     app.listen(PORT, () => console.log(`🚀 Backend running on port ${PORT}`));
