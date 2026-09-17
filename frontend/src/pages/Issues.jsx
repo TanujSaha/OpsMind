@@ -1,87 +1,68 @@
-import { useState, useEffect } from 'react';
-import { api } from '../services/api';
+import { useEffect, useState } from 'react';
 
-export default function Issues() {
+const Issues = () => {
   const [issues, setIssues] = useState([]);
-  const [filterPriority, setFilterPriority] = useState('ALL');
-  const [filterStatus, setFilterStatus] = useState('ALL');
-
-  // Load issues is defined before the useEffect to prevent the syntax error
-  const loadIssues = () => api.getIssues().then(res => setIssues(res.data));
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadIssues();
+    fetch('https://opsmind-backend-f4pc.onrender.com/api/issues')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setIssues(data.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
   }, []);
 
-  const updateStatus = async (id, newStatus) => {
-    await api.updateIssueStatus(id, newStatus);
-    loadIssues();
-  };
-
-  const filteredIssues = issues.filter(issue => {
-    const pMatch = filterPriority === 'ALL' || issue.aiAnalysis?.priority === filterPriority;
-    const sMatch = filterStatus === 'ALL' || issue.status === filterStatus;
-    return pMatch && sMatch;
-  });
-
   return (
-    <div>
-      <h1 style={{ marginBottom: '1.5rem' }}>Issue Tracker</h1>
-      <div className="card">
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-          <select className="form-group" style={{ margin: 0, padding: '0.5rem' }} value={filterPriority} onChange={e => setFilterPriority(e.target.value)}>
-            <option value="ALL">All Priorities</option>
-            <option value="CRITICAL">Critical</option>
-            <option value="HIGH">High</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="LOW">Low</option>
-          </select>
-          <select className="form-group" style={{ margin: 0, padding: '0.5rem' }} value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-            <option value="ALL">All Statuses</option>
-            <option value="Open">Open</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Resolved">Resolved</option>
-          </select>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.8rem' }}>Live Incident Command Center</h2>
+          <p style={{ margin: '0.25rem 0 0 0', color: '#64748b' }}>Real-time departmental tracking and automated triage</p>
         </div>
-
-        {filteredIssues.length === 0 ? (
-          <div className="empty-state">
-            <h3>No issues found</h3>
-            <p>Adjust your filters or report a new facility issue.</p>
-          </div>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Description</th>
-                <th>Location</th>
-                <th>Category</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredIssues.map(issue => (
-                <tr key={issue._id}>
-                  <td style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{issue.description}</td>
-                  <td>{issue.building}, {issue.room}</td>
-                  <td>{issue.aiAnalysis?.category}</td>
-                  <td><span className={`badge ${(issue.aiAnalysis?.priority || 'low').toLowerCase()}`}>{issue.aiAnalysis?.priority}</span></td>
-                  <td><strong>{issue.status}</strong></td>
-                  <td>
-                    <select value={issue.status} onChange={(e) => updateStatus(issue._id, e.target.value)} style={{ padding: '0.25rem' }}>
-                      <option value="Open">Open</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Resolved">Resolved</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
       </div>
+
+      {loading ? (
+        <p style={{ color: '#64748b' }}>Syncing with live incident stream...</p>
+      ) : issues.length === 0 ? (
+        <div style={{ background: 'white', padding: '3rem', textAlign: 'center', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+          <p style={{ color: '#64748b', fontSize: '1.1rem' }}>No active incidents reported in the system.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {issues.map((item, index) => (
+            <div key={index} style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)', borderLeft: `6px solid ${item.priority === 'High' ? '#dc2626' : '#2563eb'}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                <div>
+                  <span style={{ background: '#f1f5f9', color: '#334155', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', marginRight: '0.5rem' }}>
+                    🏢 {item.department}
+                  </span>
+                  <span style={{ background: item.priority === 'High' ? '#fee2e2' : '#fef3c7', color: item.priority === 'High' ? '#991b1b' : '#92400e', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600' }}>
+                    ⚡ {item.priority} Priority
+                  </span>
+                </div>
+                <span style={{ fontSize: '0.85rem', color: '#059669', fontWeight: '600', background: '#ecfdf5', padding: '0.25rem 0.75rem', borderRadius: '20px' }}>
+                  ⏳ ETA: {item.eta}
+                </span>
+              </div>
+
+              <h4 style={{ margin: '0.5rem 0', color: '#1e293b', fontSize: '1.1rem' }}>{item.asset} — Room {item.room} (Building {item.building})</h4>
+              <p style={{ margin: '0 0 1rem 0', color: '#475569', fontSize: '0.95rem', background: '#f8fafc', padding: '0.75rem', borderRadius: '8px' }}>"{item.description}"</p>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem', fontSize: '0.85rem', color: '#64748b' }}>
+                <span>Category: <strong>{item.category}</strong></span>
+                <span>Status: <strong style={{ color: '#2563eb' }}>{item.status}</strong></span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default Issues;

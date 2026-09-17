@@ -1,31 +1,52 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from ai_engine import AIEngine
+import re
 
-app = FastAPI(title="OpsMind AI Service")
+app = FastAPI()
 
-# Allow Node.js to talk to this service
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], 
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Initialize our ML model
-ai = AIEngine()
-
-# Define the expected JSON payload format
 class IssueRequest(BaseModel):
     description: str
 
-@app.get("/ai/health")
-def health_check():
-    return {"status": "AI Service is running!"}
+@app.post("/analyze")
+async def analyze_issue(request: IssueRequest):
+    text = request.description.lower()
+    
+    # Default values
+    department = "General Facilities"
+    category = "General Maintenance"
+    priority = "Medium"
+    eta = "24-48 Hours"
+    
+    # Real-world keyword routing logic
+    if any(word in text for word in ["wifi", "internet", "router", "connection", "net", "slow", "ethernet"]):
+        department = "IT & Network Support"
+        category = "Network Infrastructure"
+        priority = "High"
+        eta = "2-4 Hours"
+    elif any(word in text for word in ["light", "fan", "ac", "power", "socket", "short circuit", "electricity", "switch"]):
+        department = "Electrical Maintenance"
+        category = "Power & HVAC"
+        priority = "High" if "spark" in text or "smoke" in text else "Medium"
+        eta = "4-6 Hours"
+    elif any(word in text for word in ["water", "pipe", "leak", "tap", "washroom", "toilet", "drainage"]):
+        department = "Plumbing & Sanitation"
+        category = "Water Works"
+        priority = "High" if "leak" in text else "Medium"
+        eta = "3-5 Hours"
+    elif any(word in text for word in ["pc", "computer", "lab", "projector", "screen", "keyboard"]):
+        department = "Lab Administration"
+        category = "Hardware Asset"
+        priority = "Medium"
+        eta = "12 Hours"
 
-@app.post("/ai/analyze")
-def analyze_issue(request: IssueRequest):
-    # Pass the text to our scikit-learn model
-    result = ai.analyze_issue(request.description)
-    return result
+    return {
+        "department": department,
+        "category": category,
+        "priority": priority,
+        "eta": eta,
+        "status": "Assigned"
+    }
+
+@app.get("/")
+def root():
+    return {"status": "OpsMind AI Engine Online"}

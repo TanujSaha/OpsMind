@@ -6,21 +6,24 @@ const createIssue = async (req, res) => {
   try {
     const { building, room, asset, description } = req.body;
 
-    // Guaranteed default values
-    let aiCategory = 'General Maintenance';
-    let aiPriority = 'Medium';
+    let aiData = {
+      department: 'General Facilities',
+      category: 'General Maintenance',
+      priority: 'Medium',
+      eta: '24 Hours',
+      status: 'Submitted'
+    };
 
     try {
       const aiResponse = await axios.post(process.env.PYTHON_AI_URL || 'http://localhost:8000/analyze', {
         description
-      }, { timeout: 4000 }); // timeout quickly so it doesn't hang
+      }, { timeout: 4000 });
 
       if (aiResponse.data) {
-        if (aiResponse.data.category) aiCategory = aiResponse.data.category;
-        if (aiResponse.data.priority) aiPriority = aiResponse.data.priority;
+        aiData = { ...aiData, ...aiResponse.data };
       }
     } catch (aiError) {
-      console.warn('⚠️ AI Service offline, using default classification:', aiError.message);
+      console.warn('⚠️ AI Service fallback active:', aiError.message);
     }
 
     const newIssue = new Issue({
@@ -28,9 +31,11 @@ const createIssue = async (req, res) => {
       room,
       asset: asset || 'General Facility',
       description,
-      category: aiCategory,
-      priority: aiPriority,
-      status: 'Open'
+      department: aiData.department,
+      category: aiData.category,
+      priority: aiData.priority,
+      eta: aiData.eta,
+      status: aiData.status
     });
 
     await newIssue.save();
@@ -38,8 +43,17 @@ const createIssue = async (req, res) => {
 
   } catch (error) {
     console.error('Server error creating issue:', error);
-    res.status(500).json({ success: false, error: 'Server error', details: error.message });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 };
 
-module.exports = { createIssue };
+const getIssues = async (req, res) => {
+  try {
+    const issues = await Issue.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: issues });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+};
+
+module.exports = { createIssue, getIssues };
