@@ -1,60 +1,45 @@
 const path = require('path');
 const Issue = require(path.join(__dirname, '../../models/Issue'));
 const axios = require('axios');
-const nodemailer = require('nodemailer');
 
-// --- Bulletproof Nodemailer Setup ---
-// --- Bulletproof Nodemailer Setup ---
-let transporter = null;
-
-if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-  transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587, // Switch to 587 to bypass Render's IPv6 port 465 block
-    secure: false, // Must be false for port 587 (upgrades to STARTTLS automatically)
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    },
-    tls: {
-      rejectUnauthorized: false // Prevents cloud SSL certificate conflicts
-    }
-  });
-}
-
+// --- Bulletproof REST API Email Setup (via Resend) ---
 const sendResolutionEmail = async (userEmail, issueDetails) => {
-  if (!transporter || !userEmail) {
-    console.warn('⚠️ Skipping email: No email provided or Nodemailer is not configured in Render.');
+  if (!process.env.RESEND_API_KEY || !userEmail) {
+    console.warn('⚠️ Skipping email: RESEND_API_KEY missing or no email provided.');
     return;
   }
 
-  const mailOptions = {
-    from: `"OpsMind AI Command" <${process.env.EMAIL_USER}>`,
-    to: userEmail,
-    subject: `✅ Resolved: ${issueDetails.asset} in Room ${issueDetails.room}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-        <h2 style="color: #059669;">Maintenance Request Resolved</h2>
-        <p>Good news! The facility issue you reported has been fixed.</p>
-        <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
-          <p><strong>Asset:</strong> ${issueDetails.asset}</p>
-          <p><strong>Location:</strong> Building ${issueDetails.building}, Room ${issueDetails.room}</p>
-          <p><strong>Description:</strong> "${issueDetails.description}"</p>
-        </div>
-        <p>Thank you for using OpsMind Facility Command.</p>
-      </div>
-    `
-  };
-
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Resolution email sent successfully:', info.messageId);
+    const response = await axios.post('https://api.resend.com/emails', {
+      from: 'OpsMind Command <onboarding@resend.dev>', // Resend's default free testing address
+      to: userEmail, // IMPORTANT: See testing note below
+      subject: `✅ Resolved: ${issueDetails.asset} in Room ${issueDetails.room}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #059669;">Maintenance Request Resolved</h2>
+          <p>Good news! The facility issue you reported has been fixed.</p>
+          <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
+            <p><strong>Asset:</strong> ${issueDetails.asset}</p>
+            <p><strong>Location:</strong> Building ${issueDetails.building}, Room ${issueDetails.room}</p>
+            <p><strong>Description:</strong> "${issueDetails.description}"</p>
+          </div>
+          <p>Thank you for using OpsMind Facility Command.</p>
+        </div>
+      `
+    }, {
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('✅ Resolution email sent successfully via Resend API!');
   } catch (error) {
-    console.error('❌ Error sending resolution email (Non-fatal):', error.message);
-    // Server stays alive even if email fails!
+    // If the API fails, it logs the error but KEEPS THE SERVER ALIVE
+    console.error('❌ Resend API Error (Non-fatal):', error.response ? error.response.data : error.message);
   }
 };
-// -------------------------------------
+// -----------------------------------------------------
 
 const createIssue = async (req, res) => {
   try {
@@ -101,7 +86,7 @@ const updateIssueStatus = async (req, res) => {
     if (!updatedIssue) return res.status(404).json({ success: false, error: 'Issue not found' });
 
     if (status === 'Resolved' && updatedIssue.userEmail) {
-        // Run email function in background without blocking the response
+        // Runs cleanly in the background
         sendResolutionEmail(updatedIssue.userEmail, updatedIssue);
     }
 
