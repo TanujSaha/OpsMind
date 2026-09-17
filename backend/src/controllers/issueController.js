@@ -2,7 +2,7 @@ const path = require('path');
 const Issue = require(path.join(__dirname, '../../models/Issue'));
 const axios = require('axios');
 
-exports.createIssue = async (req, res) => {
+const createIssue = async (req, res) => {
   try {
     const { building, room, asset, description } = req.body;
 
@@ -39,3 +39,5 @@ exports.createIssue = async (req, res) => {
     res.status(500).json({ success: false, error: 'Server error' });
   }
 };
+
+module.exports = { createIssue };
