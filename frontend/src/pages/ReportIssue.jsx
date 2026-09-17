@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const ReportIssue = () => {
-  const [formData, setFormData] = useState({ building: '', room: '', asset: '', description: '' });
+  const [formData, setFormData] = useState({ building: '', room: '', asset: '', description: '', userEmail: '' });
   const [loading, setLoading] = useState(false);
   const [aiResult, setAiResult] = useState(null);
   const [isClustered, setIsClustered] = useState(false);
@@ -11,7 +11,7 @@ const ReportIssue = () => {
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleClear = () => {
-    setFormData({ building: '', room: '', asset: '', description: '' });
+    setFormData({ building: '', room: '', asset: '', description: '', userEmail: '' });
     setAiResult(null);
     setIsClustered(false);
   };
@@ -46,6 +46,13 @@ const ReportIssue = () => {
       <h2 style={{ marginBottom: '1.5rem', color: '#0f172a' }}>Report Facility Issue</h2>
       
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'white', padding: '2rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+        
+        {/* Email Field Added */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label style={{ fontWeight: '600' }}>Your Email (For Updates)</label>
+          <input type="email" name="userEmail" value={formData.userEmail} onChange={handleChange} placeholder="e.g., student@university.edu" required style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <label style={{ fontWeight: '600' }}>Building</label>
           <input type="text" name="building" value={formData.building} onChange={handleChange} required style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
@@ -82,6 +89,7 @@ const ReportIssue = () => {
           <p style={{ margin: '0.25rem 0' }}><strong>Category:</strong> {aiResult.category}</p>
           <p style={{ margin: '0.25rem 0' }}><strong>Priority Assigned:</strong> {aiResult.priority}</p>
           <p style={{ margin: '0.25rem 0' }}><strong>Status:</strong> {aiResult.status}</p>
+          {!isClustered && <p style={{ margin: '0.25rem 0', color: '#059669', fontSize: '0.9rem' }}>📧 You will be emailed when this is resolved.</p>}
 
           <button onClick={() => navigate('/issue-tracker')} style={{ marginTop: '1rem', padding: '0.75rem 1.25rem', backgroundColor: '#0f172a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
             View Live Incident Tracker ➔

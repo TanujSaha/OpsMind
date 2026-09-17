@@ -5,11 +5,12 @@ const IssueSchema = new mongoose.Schema({
   room: { type: String, required: true },
   asset: { type: String, default: 'General Facility' },
   description: { type: String, required: true },
+  userEmail: { type: String }, // NEW: Store the reporter's email
   department: { type: String, default: 'General Facilities' },
   category: { type: String, default: 'General Maintenance' },
   priority: { type: String, default: 'Medium' },
   eta: { type: String, default: '24 Hours' },
-  status: { type: String, default: 'Submitted' }, // Fully flexible string to prevent validation crashes
+  status: { type: String, default: 'Submitted' },
   createdAt: { type: Date, default: Date.now }
 });
 
