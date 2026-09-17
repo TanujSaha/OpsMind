@@ -1,5 +1,5 @@
-// --- THE ABSOLUTE FIX: Go up two levels to find models outside of src ---
-const Issue = require('../../models/Issue');
+const path = require('path');
+const Issue = require(path.join(__dirname, '../../models/Issue'));
 const axios = require('axios');
 
 exports.createIssue = async (req, res) => {
@@ -9,7 +9,6 @@ exports.createIssue = async (req, res) => {
     let aiCategory = 'General Maintenance';
     let aiPriority = 'Medium';
 
-    // Try talking to Python AI service
     try {
       const aiResponse = await axios.post(process.env.PYTHON_AI_URL || 'http://localhost:8000/analyze', {
         description
@@ -22,7 +21,6 @@ exports.createIssue = async (req, res) => {
       console.warn('⚠️ AI Service offline, using default classification:', aiError.message);
     }
 
-    // Save to MongoDB
     const newIssue = new Issue({
       building,
       room,
