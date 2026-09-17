@@ -4,7 +4,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState({ total: 0, open: 0, highPriority: 0, resolved: 0 });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchStats = () => {
     fetch('https://opsmind-backend-f4pc.onrender.com/api/issues')
       .then(res => res.json())
       .then(data => {
@@ -12,8 +12,8 @@ const Dashboard = () => {
           const issues = data.data;
           setStats({
             total: issues.length,
-            open: issues.filter(i => i.status !== 'Resolved').length,
-            highPriority: issues.filter(i => i.priority === 'High').length,
+            open: issues.filter(i => (i.status || 'Submitted') !== 'Resolved').length,
+            highPriority: issues.filter(i => (i.priority || 'Medium') === 'High').length,
             resolved: issues.filter(i => i.status === 'Resolved').length
           });
         }
@@ -23,6 +23,12 @@ const Dashboard = () => {
         console.error('Error fetching dashboard stats:', err);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchStats();
+    const interval = setInterval(fetchStats, 5000); // Auto-sync every 5 seconds
+    return () => clearInterval(interval);
   }, []);
 
   return (
