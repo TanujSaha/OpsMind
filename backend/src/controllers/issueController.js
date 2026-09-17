@@ -4,17 +4,20 @@ const axios = require('axios');
 const nodemailer = require('nodemailer');
 
 // --- Bulletproof Nodemailer Setup ---
+// --- Bulletproof Nodemailer Setup ---
 let transporter = null;
 
-// Only initialize if variables exist so the server doesn't crash on boot
 if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
   transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // Use SSL to prevent cloud providers from blocking port 25/587
+    port: 587, // Switch to 587 to bypass Render's IPv6 port 465 block
+    secure: false, // Must be false for port 587 (upgrades to STARTTLS automatically)
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
+    },
+    tls: {
+      rejectUnauthorized: false // Prevents cloud SSL certificate conflicts
     }
   });
 }
