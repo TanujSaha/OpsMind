@@ -1,62 +1,129 @@
 import { useState } from 'react';
-import { api } from '../services/api';
 
-export default function ReportIssue() {
-  const [formData, setFormData] = useState({ building: '', room: '', assetName: '', description: '' });
+const ReportIssue = () => {
+  const [formData, setFormData] = useState({
+    building: '',
+    room: '',
+    asset: '',
+    description: ''
+  });
   const [loading, setLoading] = useState(false);
-  const [aiResult, setAiResult] = useState(null);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setAiResult(null);
+
     try {
-      const res = await api.createIssue(formData);
-      setAiResult(res.data.aiAnalysis);
-      setFormData({ building: '', room: '', assetName: '', description: '' });
+      // --- THE NUCLEAR FIX: HARDCODED RENDER URL ---
+      // 🚨 REPLACE THIS URL WITH YOUR ACTUAL LIVE RENDER LINK 🚨
+      // Example: fetch('https://opsmind-backend-xxxx.onrender.com/api/issues', ...)
+      
+      const response = await fetch('https://opsmind-ai-xurx.onrender.com/api/issues', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error submitting issue');
+      }
+
+      alert('Issue reported successfully! AI Categorization complete.');
+      
+      // Clear the form
+      setFormData({ building: '', room: '', asset: '', description: '' }); 
+      
     } catch (error) {
-      console.error(error); // We are now using the variable!
+      console.error(error);
       alert('Error submitting issue');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div style={{ maxWidth: '600px' }}>
-      <h1 style={{ marginBottom: '1.5rem' }}>Report Facility Issue</h1>
-      <div className="card">
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Building</label>
-            <input required value={formData.building} onChange={e => setFormData({...formData, building: e.target.value})} placeholder="e.g. Main Tower" />
-          </div>
-          <div className="form-group">
-            <label>Room / Location</label>
-            <input required value={formData.room} onChange={e => setFormData({...formData, room: e.target.value})} placeholder="e.g. 402" />
-          </div>
-          <div className="form-group">
-            <label>Asset (Optional)</label>
-            <input value={formData.assetName} onChange={e => setFormData({...formData, assetName: e.target.value})} placeholder="e.g. HVAC Unit 3" />
-          </div>
-          <div className="form-group">
-            <label>Issue Description</label>
-            <textarea required rows="4" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Describe the problem in detail..." />
-          </div>
-          <button type="submit" className="btn" disabled={loading}>
-            {loading ? 'Analyzing via AI...' : 'Submit Issue'}
-          </button>
-        </form>
+    <div className="container" style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
+      <h2 className="page-title" style={{ marginBottom: '1.5rem', color: '#0f172a' }}>Report an Issue</h2>
+      
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label style={{ fontWeight: '600', color: '#1e293b' }}>Building</label>
+          <input 
+            type="text" 
+            name="building" 
+            value={formData.building} 
+            onChange={handleChange} 
+            placeholder="e.g., Building 5" 
+            required 
+            style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+          />
+        </div>
 
-        {aiResult && (
-          <div className="ai-result">
-            <h4>✓ Issue Logged & Analyzed</h4>
-            <p><strong>Category:</strong> {aiResult.category}</p>
-            <p><strong>Priority:</strong> <span className={`badge ${aiResult.priority.toLowerCase()}`}>{aiResult.priority}</span></p>
-            <p><strong>Severity Score:</strong> {aiResult.severity}/10</p>
-            <p style={{ marginTop: '0.5rem' }}><strong>Recommended Action:</strong> {aiResult.recommendedAction}</p>
-          </div>
-        )}
-      </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label style={{ fontWeight: '600', color: '#1e293b' }}>Room / Location</label>
+          <input 
+            type="text" 
+            name="room" 
+            value={formData.room} 
+            onChange={handleChange} 
+            placeholder="e.g., 204" 
+            required 
+            style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label style={{ fontWeight: '600', color: '#1e293b' }}>Asset</label>
+          <input 
+            type="text" 
+            name="asset" 
+            value={formData.asset} 
+            onChange={handleChange} 
+            placeholder="e.g., AC Unit" 
+            style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label style={{ fontWeight: '600', color: '#1e293b' }}>Issue Description</label>
+          <textarea 
+            name="description" 
+            value={formData.description} 
+            onChange={handleChange} 
+            placeholder="Describe the problem (e.g., Fan not working)" 
+            required 
+            rows="4"
+            style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', resize: 'vertical' }}
+          />
+        </div>
+
+        <button 
+          type="submit" 
+          disabled={loading} 
+          style={{ 
+            marginTop: '1rem',
+            padding: '1rem', 
+            borderRadius: '8px', 
+            backgroundColor: loading ? '#64748b' : '#3b82f6', 
+            color: 'white', 
+            border: 'none', 
+            fontWeight: '600',
+            cursor: loading ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {loading ? 'Analyzing via AI...' : 'Submit Issue'}
+        </button>
+
+      </form>
     </div>
   );
-}
+};
+
+export default ReportIssue;
