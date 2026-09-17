@@ -8,29 +8,29 @@ const Issues = () => {
     fetch('https://opsmind-backend-f4pc.onrender.com/api/issues')
       .then(res => res.json())
       .then(data => {
-        if (data.success) setIssues(data.data);
+        if (data.success && Array.isArray(data.data)) {
+          setIssues(data.data);
+        }
         setLoading(false);
       })
       .catch(err => {
-        console.error(err);
+        console.error('Error fetching issues:', err);
         setLoading(false);
       });
   }, []);
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div>
-          <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.8rem' }}>Live Incident Command Center</h2>
-          <p style={{ margin: '0.25rem 0 0 0', color: '#64748b' }}>Real-time departmental tracking and automated triage</p>
-        </div>
+    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+      <div style={{ marginBottom: '2rem' }}>
+        <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.8rem' }}>Live Incident Tracker</h2>
+        <p style={{ color: '#64748b', margin: '0.25rem 0 0 0' }}>Real-time departmental routing and tracking of active facility tickets</p>
       </div>
 
       {loading ? (
-        <p style={{ color: '#64748b' }}>Syncing with live incident stream...</p>
+        <p style={{ color: '#64748b' }}>Syncing with incident database...</p>
       ) : issues.length === 0 ? (
         <div style={{ background: 'white', padding: '3rem', textAlign: 'center', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
-          <p style={{ color: '#64748b', fontSize: '1.1rem' }}>No active incidents reported in the system.</p>
+          <p style={{ color: '#64748b', fontSize: '1.1rem' }}>No incidents logged in the database yet. Report an issue to see it here live!</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -39,23 +39,23 @@ const Issues = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                 <div>
                   <span style={{ background: '#f1f5f9', color: '#334155', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', marginRight: '0.5rem' }}>
-                    🏢 {item.department}
+                    🏢 {item.department || 'General Facilities'}
                   </span>
                   <span style={{ background: item.priority === 'High' ? '#fee2e2' : '#fef3c7', color: item.priority === 'High' ? '#991b1b' : '#92400e', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600' }}>
-                    ⚡ {item.priority} Priority
+                    ⚡ {item.priority || 'Medium'} Priority
                   </span>
                 </div>
                 <span style={{ fontSize: '0.85rem', color: '#059669', fontWeight: '600', background: '#ecfdf5', padding: '0.25rem 0.75rem', borderRadius: '20px' }}>
-                  ⏳ ETA: {item.eta}
+                  ⏳ ETA: {item.eta || '24 Hours'}
                 </span>
               </div>
 
-              <h4 style={{ margin: '0.5rem 0', color: '#1e293b', fontSize: '1.1rem' }}>{item.asset} — Room {item.room} (Building {item.building})</h4>
+              <h4 style={{ margin: '0.5rem 0', color: '#1e293b', fontSize: '1.1rem' }}>{item.asset || 'Asset'} — Room {item.room} (Building {item.building})</h4>
               <p style={{ margin: '0 0 1rem 0', color: '#475569', fontSize: '0.95rem', background: '#f8fafc', padding: '0.75rem', borderRadius: '8px' }}>"{item.description}"</p>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem', fontSize: '0.85rem', color: '#64748b' }}>
-                <span>Category: <strong>{item.category}</strong></span>
-                <span>Status: <strong style={{ color: '#2563eb' }}>{item.status}</strong></span>
+                <span>Category: <strong>{item.category || 'General'}</strong></span>
+                <span>Status: <strong style={{ color: '#2563eb' }}>{item.status || 'Submitted'}</strong></span>
               </div>
             </div>
           ))}
