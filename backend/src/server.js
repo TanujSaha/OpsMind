@@ -1,39 +1,28 @@
 require('dotenv').config();
 const express = require('express');
-const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
+const cors = require('cors');
+
+const issueRoutes = require('./routes/issueRoutes');
+
 const app = express();
 
-// Middleware to parse JSON bodies
+// 🔴 CRITICAL: This allows your Vercel frontend to talk to your Render backend
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// Configure the email transport using environment variables
-const transporter = nodemailer.createTransport({
-  service: 'gmail', // Can be switched to sendgrid, mailgun, etc.
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_APP_PASSWORD 
-  }
-});
+// Routes
+app.use('/api/issues', issueRoutes);
 
-// The dedicated email endpoint
-app.post('/api/send-email', async (req, res) => {
-  const { to, subject, message } = req.body;
+// Database connection & Server initialization
+const PORT = process.env.PORT || 10000;
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
 
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: to,
-      subject: subject,
-      text: message,
-      // html: `<p>${message}</p>` // Optional: Use this instead of 'text' for rich formatting
-    });
-    
-    res.status(200).json({ success: true, message: 'Email sent successfully!' });
-  } catch (error) {
-    console.error('Email Error:', error);
-    res.status(500).json({ success: false, message: 'Failed to send email.' });
-  }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log('MongoDB Connected successfully!');
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+  });
